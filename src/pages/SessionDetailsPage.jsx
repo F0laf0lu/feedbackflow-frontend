@@ -72,38 +72,50 @@ const SessionSummaryPage = () => {
             boxShadow: '0 1px 2px rgba(0, 0, 0, 0.03)'
           }}
         >
-          <Title level={3} style={{ marginBottom: 32 }}>
+          <Title level={4} style={{ marginBottom: 20 }}>
             Session Performance Summary
           </Title>
 
           {/* Stats Row */}
-          <Row gutter={48} style={{ marginBottom: 48 }}>
+          <Row gutter={24} style={{ marginBottom: 28 }}>
             <Col span={8}>
-              <div>
-                <Text type="secondary" style={{ fontSize: 15, display: 'block', marginBottom: 8 }}>
+              <div style={{
+                background: '#f9fafb',
+                borderRadius: 10,
+                padding: '16px 20px',
+              }}>
+                <Text type="secondary" style={{ fontSize: 13, display: 'block', marginBottom: 4 }}>
                   Total Feedback
                 </Text>
-                <Title level={1} style={{ margin: 0, fontSize: 48, fontWeight: 700 }}>
+                <Title level={3} style={{ margin: 0, fontWeight: 700 }}>
                   1,284
                 </Title>
               </div>
             </Col>
             <Col span={8}>
-              <div>
-                <Text type="secondary" style={{ fontSize: 15, display: 'block', marginBottom: 8 }}>
+              <div style={{
+                background: '#f9fafb',
+                borderRadius: 10,
+                padding: '16px 20px',
+              }}>
+                <Text type="secondary" style={{ fontSize: 13, display: 'block', marginBottom: 4 }}>
                   Overall Sentiment
                 </Text>
-                <Title level={1} style={{ margin: 0, fontSize: 48, fontWeight: 700 }}>
+                <Title level={3} style={{ margin: 0, fontWeight: 700 }}>
                   8.2/10
                 </Title>
               </div>
             </Col>
             <Col span={8}>
-              <div>
-                <Text type="secondary" style={{ fontSize: 15, display: 'block', marginBottom: 8 }}>
+              <div style={{
+                background: '#f9fafb',
+                borderRadius: 10,
+                padding: '16px 20px',
+              }}>
+                <Text type="secondary" style={{ fontSize: 13, display: 'block', marginBottom: 4 }}>
                   Audience Peak
                 </Text>
-                <Title level={1} style={{ margin: 0, fontSize: 48, fontWeight: 700 }}>
+                <Title level={3} style={{ margin: 0, fontWeight: 700 }}>
                   350
                 </Title>
               </div>
@@ -111,13 +123,13 @@ const SessionSummaryPage = () => {
           </Row>
 
           {/* Sentiment Breakdown */}
-          <div style={{ marginBottom: 48 }}>
-            <Title level={4} style={{ marginBottom: 16 }}>
+          <div style={{ marginBottom: 28 }}>
+            <Text strong style={{ fontSize: 14, display: 'block', marginBottom: 12 }}>
               Sentiment Breakdown
-            </Title>
-            
-            <div style={{ marginBottom: 16 }}>
-              <div style={{ display: 'flex', width: '100%', height: 32, borderRadius: 8, overflow: 'hidden' }}>
+            </Text>
+
+            <div style={{ marginBottom: 10 }}>
+              <div style={{ display: 'flex', width: '100%', height: 24, borderRadius: 6, overflow: 'hidden' }}>
                 <div
                   style={{
                     width: '70%',
@@ -127,7 +139,7 @@ const SessionSummaryPage = () => {
                     justifyContent: 'center',
                     color: '#fff',
                     fontWeight: 600,
-                    fontSize: 14
+                    fontSize: 12
                   }}
                 >
                   70%
@@ -141,7 +153,7 @@ const SessionSummaryPage = () => {
                     justifyContent: 'center',
                     color: '#fff',
                     fontWeight: 600,
-                    fontSize: 14
+                    fontSize: 12
                   }}
                 >
                   20%
@@ -155,7 +167,7 @@ const SessionSummaryPage = () => {
                     justifyContent: 'center',
                     color: '#fff',
                     fontWeight: 600,
-                    fontSize: 14
+                    fontSize: 12
                   }}
                 >
                   10%
@@ -163,58 +175,58 @@ const SessionSummaryPage = () => {
               </div>
             </div>
 
-            <Space size={24}>
-              <Space size={8}>
+            <Space size={16}>
+              <Space size={6}>
                 <div
                   style={{
-                    width: 12,
-                    height: 12,
+                    width: 10,
+                    height: 10,
                     borderRadius: 2,
                     background: '#52c41a'
                   }}
                 />
-                <Text style={{ fontSize: 14 }}>Positive</Text>
+                <Text style={{ fontSize: 13, color: '#8c8c8c' }}>Positive</Text>
               </Space>
-              <Space size={8}>
+              <Space size={6}>
                 <div
                   style={{
-                    width: 12,
-                    height: 12,
+                    width: 10,
+                    height: 10,
                     borderRadius: 2,
                     background: '#8c8c8c'
                   }}
                 />
-                <Text style={{ fontSize: 14 }}>Neutral</Text>
+                <Text style={{ fontSize: 13, color: '#8c8c8c' }}>Neutral</Text>
               </Space>
-              <Space size={8}>
+              <Space size={6}>
                 <div
                   style={{
-                    width: 12,
-                    height: 12,
+                    width: 10,
+                    height: 10,
                     borderRadius: 2,
                     background: '#ff4d4f'
                   }}
                 />
-                <Text style={{ fontSize: 14 }}>Negative</Text>
+                <Text style={{ fontSize: 13, color: '#8c8c8c' }}>Negative</Text>
               </Space>
             </Space>
           </div>
 
           {/* Key Themes */}
-          <div style={{ marginBottom: 32 }}>
-            <Title level={4} style={{ marginBottom: 8 }}>
+          <div style={{ marginBottom: 24 }}>
+            <Text strong style={{ fontSize: 14, display: 'block', marginBottom: 4 }}>
               Key Themes
-            </Title>
-            <Text type="secondary" style={{ fontSize: 14, display: 'block', marginBottom: 16 }}>
+            </Text>
+            <Text type="secondary" style={{ fontSize: 13, display: 'block', marginBottom: 12 }}>
               Most frequent words in positive feedback
             </Text>
-            <Space size={12} wrap>
+            <Space size={8} wrap>
               {keyThemes.map((theme, index) => (
                 <Tag
                   key={index}
                   style={{
-                    padding: '6px 16px',
-                    fontSize: 14,
+                    padding: '4px 12px',
+                    fontSize: 13,
                     borderRadius: 6,
                     background: theme.color,
                     border: 'none',
@@ -228,14 +240,13 @@ const SessionSummaryPage = () => {
           </div>
 
           {/* Action Buttons */}
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12, paddingTop: 24, borderTop: '1px solid #f0f0f0' }}>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, paddingTop: 16, borderTop: '1px solid #f0f0f0' }}>
             <Button
-              size="large"
               icon={<ExportOutlined />}
               style={{
                 borderRadius: 8,
-                height: 44,
-                fontSize: 15,
+                height: 38,
+                fontSize: 14,
                 fontWeight: 500
               }}
             >
@@ -243,13 +254,12 @@ const SessionSummaryPage = () => {
             </Button>
             <Button
               type="primary"
-              size="large"
               icon={<FileTextOutlined />}
               style={{
                 borderRadius: 8,
                 background: '#1890ff',
-                height: 44,
-                fontSize: 15,
+                height: 38,
+                fontSize: 14,
                 fontWeight: 500
               }}
             >

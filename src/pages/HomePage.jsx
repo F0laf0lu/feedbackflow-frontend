@@ -140,9 +140,10 @@ const HomePage = () => {
 
       <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Title level={3} style={{ margin: 0 }}>
-          Recent Activity
+          Recent Sessions
         </Title>
-        <Button type="link" style={{ color: '#1890ff', fontSize: 16 }}>
+        <Button type="link" style={{ color: '#1890ff', fontSize: 16 }} 
+        onClick={() => handlePastSession()}>
           View All
         </Button>
       </div>

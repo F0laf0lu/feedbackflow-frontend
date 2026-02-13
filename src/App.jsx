@@ -6,6 +6,8 @@ import SessionHistoryPage from './pages/SessionHistoryPage'
 import SessionDetails from './pages/SessionDetailsPage'
 import LiveFeedbackSession from './pages/FeedbackPage'
 import FeedbackSubmissionForm from './pages/AudienceFeedbackPage'
+import LoginPage from './pages/LoginPage'
+import RegisterPage from './pages/RegisterPage'
 import './App.css'
 
 function App() {
@@ -24,8 +26,9 @@ function App() {
             <Route path='/session/:id/livefeedback' element={<LiveFeedbackSession/>}/> 
             <Route path="/" element={<Navigate to="/home" replace />} />
           </Route>
-          <Route path='/session/:id/audience-feedback' element={<FeedbackSubmissionForm/>}/> 
-          
+          <Route path='/session/:id/audience-feedback' element={<FeedbackSubmissionForm/>}/>
+          <Route path='/login' element={<LoginPage/>}/>
+          <Route path='/register' element={<RegisterPage/>}/>
         </Routes>
       </Router>
   )
