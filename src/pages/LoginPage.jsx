@@ -1,22 +1,52 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Form, Input, Button, Typography } from 'antd';
-import { EyeInvisibleOutlined, EyeOutlined, BarChartOutlined } from '@ant-design/icons';
+import { Form, Input, Button, Typography, Alert } from 'antd';
+import { EyeInvisibleOutlined, EyeOutlined } from '@ant-design/icons';
+import { login } from '../api/auth';
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
 
 const LoginPage = () => {
+  const [form] = Form.useForm();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [generalError, setGeneralError] = useState(null);
 
-  const onFinish = (values) => {
+  const onFinish = async (values) => {
     setLoading(true);
-    // TODO: integrate with auth API
-    console.log('Login values:', values);
-    setTimeout(() => {
-      setLoading(false);
+    setGeneralError(null);
+
+    try {
+      const { data: res } = await login(values);
+      localStorage.setItem('access_token', res.data.access_token);
+      localStorage.setItem('refresh_token', res.data.refresh_token);
+      localStorage.setItem('user', JSON.stringify(res.data.user));
       navigate('/home');
-    }, 1000);
+    } catch (err) {
+      const { errors, message } = err.response?.data ?? {};
+
+      if (errors && typeof errors === 'object') {
+        const formFields = ['username', 'password'];
+        const fieldErrors = Object.entries(errors).filter(([key]) => formFields.includes(key));
+        const nonFieldErrors = Object.entries(errors).filter(([key]) => !formFields.includes(key));
+
+        if (fieldErrors.length) {
+          form.setFields(fieldErrors.map(([name, msg]) => ({
+            name,
+            errors: [Array.isArray(msg) ? msg[0] : msg],
+          })));
+        }
+        if (nonFieldErrors.length) {
+          setGeneralError(nonFieldErrors.map(([, msg]) => Array.isArray(msg) ? msg[0] : msg).join(' '));
+        } else if (!fieldErrors.length) {
+          setGeneralError(message ?? 'Something went wrong. Please try again.');
+        }
+      } else {
+        setGeneralError(message ?? 'Something went wrong. Please try again.');
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -68,10 +98,19 @@ const LoginPage = () => {
         </Text>
 
         {/* Form */}
-        <Form layout="vertical" onFinish={onFinish} requiredMark={false}>
+        <Form form={form} layout="vertical" onFinish={onFinish} requiredMark={false}>
+          {generalError && (
+            <Alert
+              message={generalError}
+              type="error"
+              showIcon
+              style={{ marginBottom: 20, borderRadius: 8 }}
+            />
+          )}
+
           <Form.Item
             label={<span style={{ fontWeight: 600 }}>Email or Username</span>}
-            name="email"
+            name="username"
             rules={[{ required: true, message: 'Please enter your email or username' }]}
           >
             <Input

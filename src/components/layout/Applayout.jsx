@@ -1,18 +1,39 @@
 
-import { Layout, Card, Table, Button, Typography, Space, Avatar } from 'antd';
-import { PlusCircleOutlined, ClockCircleOutlined, UserOutlined } from '@ant-design/icons';
+import { Layout, Button, Typography, Space, Avatar, Dropdown } from 'antd';
+import { UserOutlined, LogoutOutlined } from '@ant-design/icons';
 import { Outlet, useNavigate } from 'react-router-dom';
+import { logout } from '../../api/auth';
 
 const { Header, Content } = Layout;
-const { Title, Text } = Typography;
+const { Text } = Typography;
 
 const AppLayout = ()=>{
-
+  const user = JSON.parse(localStorage.getItem('user') || '{}')
   const navigate = useNavigate()
 
-    const handleDashboard = ()=>{
-      navigate('/home')
+  const handleLogout = async () => {
+    try {
+      await logout()
+    } catch {
+      // proceed regardless
     }
+    localStorage.removeItem('access_token')
+    localStorage.removeItem('refresh_token')
+    localStorage.removeItem('user')
+    navigate('/login', { replace: true })
+  }
+
+  const avatarMenu = {
+    items: [
+      {
+        key: 'logout',
+        icon: <LogoutOutlined />,
+        label: 'Logout',
+        danger: true,
+        onClick: handleLogout,
+      },
+    ],
+  }
 
     return(
 
@@ -59,25 +80,14 @@ const AppLayout = ()=>{
         <Space size={32}>
           <Button type="text" style={{ fontSize: 15 }} onClick={()=>{navigate('/home')}}>Dashboard</Button>
           <Button type="text" style={{ fontSize: 15 }} onClick={()=>{navigate('/past-sessions')}}>Sessions</Button>
-          {/* <Button type="text" style={{ fontSize: 15 }}>Analytics</Button> */}
-          {/* <Button type="text" style={{ fontSize: 15 }}>Settings</Button> */}
-          {/* <Button 
-            type="primary" 
-            style={{
-              borderRadius: 8,
-              background: '#1890ff',
-              height: 40,
-              fontWeight: 500,
-              fontSize: 15
-            }}
-          >
-            New Session
-          </Button> */}
-          <Avatar
-            size={44}
-            style={{ background: '#ffd6b8' }}
-            icon={<UserOutlined />}
-          />
+          <Dropdown menu={avatarMenu} placement="bottomRight" trigger={['click']}>
+            <Avatar
+              size={44}
+              style={{ background: '#ffd6b8', color: '#d46b08', fontWeight: 600, cursor: 'pointer' }}
+            >
+              {user.username?.[0]?.toUpperCase() ?? <UserOutlined />}
+            </Avatar>
+          </Dropdown>
         </Space>
         </Header>
         <Content style={{ padding: '48px 48px 24px', display:'flex', justifyContent:'center' }}>

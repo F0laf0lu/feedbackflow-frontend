@@ -1,67 +1,56 @@
+import { useEffect, useState } from 'react';
 import {useNavigate} from 'react-router-dom'
-import { Layout, Card, Table, Button, Typography, Space, Avatar } from 'antd';
-import { PlusCircleOutlined, ClockCircleOutlined, UserOutlined } from '@ant-design/icons';
+import { Card, Table, Button, Typography, Space } from 'antd';
+import { PlusCircleOutlined, ClockCircleOutlined } from '@ant-design/icons';
+import { getRecentSessions } from '../api/sessions';
 import 'antd/dist/reset.css';
 
-const { Header, Content } = Layout;
 const { Title, Text } = Typography;
 
 const HomePage = () => {
-
+  const user = JSON.parse(localStorage.getItem('user') || '{}')
   const navigate = useNavigate()
+  const [sessions, setSessions] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    getRecentSessions()
+      .then(({ data: res }) => setSessions(res.data ?? []))
+      .catch(() => setSessions([]))
+      .finally(() => setLoading(false))
+  }, [])
 
   const columns = [
     {
       title: 'SESSION TITLE',
-      dataIndex: 'sessionTitle',
-      key: 'sessionTitle',
+      dataIndex: 'title',
+      key: 'title',
       width: '40%',
     },
     {
       title: 'DATE',
-      dataIndex: 'date',
-      key: 'date',
+      dataIndex: 'created_at',
+      key: 'created_at',
       width: '30%',
     },
     {
       title: 'PARTICIPANTS',
-      dataIndex: 'participants',
-      key: 'participants',
+      dataIndex: 'audience_peak',
+      key: 'audience_peak',
       width: '20%',
+      render: (count) => `${count ?? 0} Participants`,
     },
     {
       title: '',
       key: 'action',
       width: '10%',
-      render: () => (
-        <Button type="link" style={{ color: '#1890ff' }}>
+      render: (_, record) => (
+        <Button type="link" style={{ color: '#1890ff' }} onClick={() => navigate(`/session/${record.id}`)}>
           View
         </Button>
       ),
     },
   ];
-
-  const dataSource = [
-    {
-      key: '1',
-      sessionTitle: 'Product Design Sync',
-      date: 'Oct 26, 2023',
-      participants: '34 Participants',
-    },
-    {
-      key: '2',
-      sessionTitle: 'Marketing All-Hands',
-      date: 'Oct 24, 2023',
-      participants: '112 Participants',
-    },
-    {
-      key: '3',
-      sessionTitle: 'Q3 Investor Update',
-      date: 'Oct 19, 2023',
-      participants: '87 Participants',
-    },
-  ];
-
 
   const handleStartSession = ()=>{
     navigate('/new-session')
@@ -75,7 +64,7 @@ const HomePage = () => {
 
     <div style={{width:'75%'}}>
       <Title level={2} style={{ marginBottom: 40 }}>
-        Welcome back, Alex!
+        Welcome back, {user.username}!
       </Title>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, marginBottom: 48 }}>
@@ -151,7 +140,9 @@ const HomePage = () => {
       <Card style={{ borderRadius: 12, border: '1px solid #f0f0f0' }}>
         <Table
           columns={columns}
-          dataSource={dataSource}
+          dataSource={sessions}
+          rowKey="id"
+          loading={loading}
           pagination={false}
           showHeader={true}
           style={{ background: '#fff' }}

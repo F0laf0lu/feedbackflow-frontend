@@ -8,23 +8,22 @@ import LiveFeedbackSession from './pages/FeedbackPage'
 import FeedbackSubmissionForm from './pages/AudienceFeedbackPage'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
+import ProtectedRoute from './components/ProtectedRoute'
 import './App.css'
 
 function App() {
-
-
   return (
       <Router>
         <Routes>
-          <Route path='/' element={
-            <AppLayout/>
-          }>
-            <Route path='/home' element={<HomePage/>}/>
-            <Route path='/new-session' element={<CreateSessionPage/>}/>
-            <Route path='/past-sessions' element={<SessionHistoryPage/>}/>
-            <Route path='/session/:id' element={<SessionDetails/>}/> 
-            <Route path='/session/:id/livefeedback' element={<LiveFeedbackSession/>}/> 
-            <Route path="/" element={<Navigate to="/home" replace />} />
+          <Route element={<ProtectedRoute />}>
+            <Route path='/' element={<AppLayout/>}>
+              <Route path='/home' element={<HomePage/>}/>
+              <Route path='/new-session' element={<CreateSessionPage/>}/>
+              <Route path='/past-sessions' element={<SessionHistoryPage/>}/>
+              <Route path='/session/:id' element={<SessionDetails/>}/>
+              <Route path='/session/:id/livefeedback' element={<LiveFeedbackSession/>}/>
+              <Route path="/" element={<Navigate to="/home" replace />} />
+            </Route>
           </Route>
           <Route path='/session/:id/audience-feedback' element={<FeedbackSubmissionForm/>}/>
           <Route path='/login' element={<LoginPage/>}/>

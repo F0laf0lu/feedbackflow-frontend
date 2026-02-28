@@ -1,21 +1,41 @@
+import { useState } from 'react';
 import {useNavigate} from 'react-router-dom'
-import { Layout, Card, Form, Input, Button, Space, Avatar, Typography } from 'antd';
-import { ArrowLeftOutlined, PlusCircleOutlined, UserOutlined } from '@ant-design/icons';
+import { Layout, Card, Form, Input, Button, Typography, Alert } from 'antd';
+import { ArrowLeftOutlined, PlusCircleOutlined } from '@ant-design/icons';
+import { createSession } from '../api/sessions';
 import 'antd/dist/reset.css';
 
-const { Header, Content } = Layout;
+const { Content } = Layout;
 const { Title, Text } = Typography;
 const { TextArea } = Input;
 
 const CreateSessionPage = () => {
-
-   const navigate = useNavigate() 
+  const navigate = useNavigate()
   const [form] = Form.useForm();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const onFinish = (values) => {
-    console.log('Form values:', values);
-    // Handle form submission
-    navigate("/session/1/livefeedback")
+  const onFinish = async (values) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data: res } = await createSession(values);
+      navigate(`/session/${res.data.id}/livefeedback`);
+    } catch (err) {
+      const { errors, message } = err.response?.data ?? {};
+      if (errors && typeof errors === 'object') {
+        form.setFields(
+          Object.entries(errors).map(([name, msg]) => ({
+            name,
+            errors: [Array.isArray(msg) ? msg[0] : msg],
+          }))
+        );
+      } else {
+        setError(message ?? 'Something went wrong. Please try again.');
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handlebackButton = ()=>{
@@ -53,6 +73,15 @@ const CreateSessionPage = () => {
               Create a new session to start gathering live feedback from your audience.
             </Text>
           </div>
+
+          {error && (
+            <Alert
+              message={error}
+              type="error"
+              showIcon
+              style={{ marginBottom: 24, borderRadius: 8 }}
+            />
+          )}
 
           <Form
             form={form}
@@ -99,6 +128,7 @@ const CreateSessionPage = () => {
                 type="primary"
                 htmlType="submit"
                 size="large"
+                loading={loading}
                 icon={<PlusCircleOutlined />}
                 style={{
                   borderRadius: 8,

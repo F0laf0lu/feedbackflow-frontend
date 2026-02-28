@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { Layout, Card, Button, Space, Typography, Progress, Input, message } from 'antd';
-import { 
-  BarChartOutlined, 
-  UsergroupAddOutlined, 
-  PauseOutlined, 
+import {
+  BarChartOutlined,
+  UsergroupAddOutlined,
+  CaretRightOutlined,
+  PauseOutlined,
   DeleteOutlined,
   CopyOutlined,
   QrcodeOutlined,
@@ -12,13 +13,12 @@ import {
 import 'antd/dist/reset.css';
 import { useNavigate } from 'react-router-dom';
 
-const { Header, Content } = Layout;
 const { Title, Text } = Typography;
 
 const LiveFeedbackSession = () => {
 
   const navigate = useNavigate()
-
+  const [started, setStarted] = useState(false)
   const [feedbackList] = useState([
     {
       id: 1,
@@ -44,7 +44,14 @@ const LiveFeedbackSession = () => {
       timestamp: "5 mins ago",
       sentiment: "positive"
     }
-  ]);
+  ])
+
+  const handleStart = () => setStarted(true)
+
+  const handleEnd = () => {
+    setStarted(false)
+    navigate('/home')
+  }
 
   const sentimentColors = {
     positive: '#52c41a',
@@ -106,20 +113,29 @@ const LiveFeedbackSession = () => {
         <Space size={16}>
           <Space align="center" style={{ color: '#595959' }}>
             <UsergroupAddOutlined style={{ fontSize: 18 }} />
-            <Text strong style={{ fontSize: 15 }}>125 Active</Text>
+            <Text strong style={{ fontSize: 15 }}>0 Active</Text>
           </Space>
-          <Button 
-            type="primary" 
-            size="large"
-            style={{
-              borderRadius: 8,
-              background: '#1890ff',
-              height: 40,
-              fontWeight: 500
-            }}
-          >
-            End Session
-          </Button>
+          {!started ? (
+            <Button
+              type="primary"
+              size="large"
+              icon={<CaretRightOutlined />}
+              style={{ borderRadius: 8, background: '#52c41a', height: 40, fontWeight: 500 }}
+              onClick={handleStart}
+            >
+              Start Session
+            </Button>
+          ) : (
+            <Button
+              type="primary"
+              size="large"
+              danger
+              style={{ borderRadius: 8, height: 40, fontWeight: 500 }}
+              onClick={handleEnd}
+            >
+              End Session
+            </Button>
+          )}
         </Space>
       </div>
 
@@ -134,10 +150,12 @@ const LiveFeedbackSession = () => {
               </Title>
             }
             extra={
-              <Space size={16}>
-                <Button icon={<PauseOutlined />}>Pause Feed</Button>
-                <Button icon={<DeleteOutlined />}>Clear</Button>
-              </Space>
+              started ? (
+                <Space size={16}>
+                  <Button icon={<PauseOutlined />}>Pause Feed</Button>
+                  <Button icon={<DeleteOutlined />}>Clear</Button>
+                </Space>
+              ) : null
             }
             style={{
               borderRadius: 12,
@@ -227,8 +245,8 @@ const LiveFeedbackSession = () => {
               </div>
             </Card>
 
-            {/* Live Sentiment Section */}
-            <Card
+            {/* Live Sentiment Section — only shown after session starts */}
+            {started && <Card
               style={{
                 borderRadius: 12,
                 border: '1px solid #f0f0f0'
@@ -315,7 +333,7 @@ const LiveFeedbackSession = () => {
                   </Space>
                 </div>
               </div>
-            </Card>
+            </Card>}
           </div>
         </div>
       </div>

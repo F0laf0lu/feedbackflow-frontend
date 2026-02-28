@@ -1,22 +1,52 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Form, Input, Button, Typography } from 'antd';
+import { Form, Input, Button, Typography, Alert } from 'antd';
 import { EyeInvisibleOutlined, EyeOutlined } from '@ant-design/icons';
+import { register } from '../api/auth';
 
 const { Text } = Typography;
 
 const RegisterPage = () => {
+  const [form] = Form.useForm();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [generalError, setGeneralError] = useState(null);
 
-  const onFinish = (values) => {
+  const onFinish = async (values) => {
     setLoading(true);
-    // TODO: integrate with auth API
-    console.log('Register values:', values);
-    setTimeout(() => {
-      setLoading(false);
+    setGeneralError(null);
+
+    const { confirmPassword, ...payload } = values;
+    payload.confirm_password = confirmPassword;
+    // omit username if left blank so backend auto-generates it
+    if (!payload.username) delete payload.username;
+
+    try {
+      await register(payload);
       navigate('/login');
-    }, 1000);
+    } catch (err) {
+      const { errors, message } = err.response?.data ?? {};
+
+      if (errors && typeof errors === 'object') {
+        // map field-level errors onto the form
+        const fieldErrors = Object.entries(errors).map(([name, msg]) => ({
+          name,
+          errors: [msg],
+        }));
+        form.setFields(fieldErrors);
+
+        // if there are also keys that don't correspond to fields, surface them
+        const formFields = ['username', 'email', 'password'];
+        const nonFieldErrors = Object.entries(errors)
+          .filter(([key]) => !formFields.includes(key))
+          .map(([, msg]) => msg);
+        if (nonFieldErrors.length) setGeneralError(nonFieldErrors.join(' '));
+      } else {
+        setGeneralError(message ?? 'Something went wrong. Please try again.');
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -67,11 +97,19 @@ const RegisterPage = () => {
         </Text>
 
         {/* Form */}
-        <Form layout="vertical" onFinish={onFinish} requiredMark={false}>
+        <Form form={form} layout="vertical" onFinish={onFinish} requiredMark={false}>
+          {generalError && (
+            <Alert
+              message={generalError}
+              type="error"
+              showIcon
+              style={{ marginBottom: 20, borderRadius: 8 }}
+            />
+          )}
+
           <Form.Item
-            label={<span style={{ fontWeight: 600 }}>Username</span>}
+            label={<span style={{ fontWeight: 600 }}>Username <Text style={{ color: '#8c8c8c', fontWeight: 400 }}>(optional)</Text></span>}
             name="username"
-            rules={[{ required: true, message: 'Please enter a username' }]}
           >
             <Input
               placeholder="Enter your username"
