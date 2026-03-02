@@ -8,6 +8,7 @@ import LiveFeedbackSession from './pages/FeedbackPage'
 import FeedbackSubmissionForm from './pages/AudienceFeedbackPage'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
+import JoinPage from './pages/JoinPage'
 import ProtectedRoute from './components/ProtectedRoute'
 import './App.css'
 
@@ -25,7 +26,9 @@ function App() {
               <Route path="/" element={<Navigate to="/home" replace />} />
             </Route>
           </Route>
-          <Route path='/session/:id/audience-feedback' element={<FeedbackSubmissionForm/>}/>
+          {/* <Route path='/session/:id/audience-feedback' element={<FeedbackSubmissionForm/>}/> */}
+          <Route path='/join' element={<JoinPage/>}/>
+          <Route path='/:code' element={<FeedbackSubmissionForm/>}/>
           <Route path='/login' element={<LoginPage/>}/>
           <Route path='/register' element={<RegisterPage/>}/>
         </Routes>

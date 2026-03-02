@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Layout, Card, Button, Space, Typography, Progress, Input, message } from 'antd';
 import {
   BarChartOutlined,
@@ -11,44 +11,49 @@ import {
   ArrowLeftOutlined
 } from '@ant-design/icons';
 import 'antd/dist/reset.css';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import { getSession } from '../api/sessions';
 
 const { Title, Text } = Typography;
 
+const WS_BASE_URL = import.meta.env.VITE_WS_BASE_URL ?? 'ws://localhost:8000';
+
 const LiveFeedbackSession = () => {
 
+  const { id: sessionId } = useParams()
   const navigate = useNavigate()
+  const [session, setSession] = useState(null)
   const [started, setStarted] = useState(false)
-  const [feedbackList] = useState([
-    {
-      id: 1,
-      message: "Amazing presentation! The new roadmap looks very promising and addresses all our key concerns. Great job to the entire team.",
-      timestamp: "Just now",
-      sentiment: "positive"
-    },
-    {
-      id: 2,
-      message: "Could we get more details on the budget allocation for the marketing initiatives? It felt a bit vague.",
-      timestamp: "1 min ago",
-      sentiment: "neutral"
-    },
-    {
-      id: 3,
-      message: "When will the slides be shared with us?",
-      timestamp: "3 mins ago",
-      sentiment: "neutral"
-    },
-    {
-      id: 4,
-      message: "I'm really excited about the new partner program. This is a game changer!",
-      timestamp: "5 mins ago",
-      sentiment: "positive"
-    }
-  ])
+  const [feedbackList, setFeedbackList] = useState([])
+  const [activeUsers, setActiveUsers] = useState(0)
+  const wsRef = useRef(null)
 
-  const handleStart = () => setStarted(true)
+  useEffect(() => {
+    getSession(sessionId).then(({ data: res }) => setSession(res.data))
+    return () => wsRef.current?.close()
+  }, [sessionId])
+
+  const handleStart = () => {
+    const ws = new WebSocket(`${WS_BASE_URL}/ws/session/${sessionId}/`)
+    wsRef.current = ws
+
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data)
+      if (data.type === 'feedback') {
+        setFeedbackList((prev) => [data, ...prev])
+      }
+      if (data.type === 'active_count') {
+        setActiveUsers(data.count)
+      }
+    }
+
+    ws.onerror = () => message.error('Connection error.')
+    setStarted(true)
+  }
 
   const handleEnd = () => {
+    wsRef.current?.close()
+    wsRef.current = null
     setStarted(false)
     navigate('/home')
   }
@@ -60,9 +65,13 @@ const LiveFeedbackSession = () => {
   };
 
   const copyToClipboard = () => {
-    navigator.clipboard.writeText('https://feedback.live/a8k2m');
+    navigator.clipboard.writeText(shareLink);
     message.success('Link copied to clipboard!');
   };
+
+  const shareLink = session?.audience_code
+    ? `${window.location.origin}/${session.audience_code}`
+    : ''
 
   const handlebackButton = ()=>{
     navigate("/home");
@@ -76,7 +85,7 @@ const LiveFeedbackSession = () => {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f5f5f5' }}>
+    <div style={{ minHeight: '100vh', background: '#f5f5f5', width: '100%' }}>
         <Button
                 type="text"
                 icon={<ArrowLeftOutlined />}
@@ -106,14 +115,14 @@ const LiveFeedbackSession = () => {
         <Space align="center" size={16}>
           <BarChartOutlined style={{ fontSize: 24, color: '#1890ff' }} />
           <Title level={3} style={{ margin: 0, fontWeight: 600 }}>
-            Q3 All-Hands Meeting
+            {session?.title ?? 'Live Session'}
           </Title>
         </Space>
 
         <Space size={16}>
           <Space align="center" style={{ color: '#595959' }}>
             <UsergroupAddOutlined style={{ fontSize: 18 }} />
-            <Text strong style={{ fontSize: 15 }}>0 Active</Text>
+            <Text strong style={{ fontSize: 15 }}>{activeUsers} Active</Text>
           </Space>
           {!started ? (
             <Button
@@ -123,7 +132,7 @@ const LiveFeedbackSession = () => {
               style={{ borderRadius: 8, background: '#52c41a', height: 40, fontWeight: 500 }}
               onClick={handleStart}
             >
-              Start Session
+              Start Livefeedback
             </Button>
           ) : (
             <Button
@@ -141,7 +150,7 @@ const LiveFeedbackSession = () => {
 
       <div style={{ padding: '32px 48px' }}>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 400px', gap: 24 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 400px', gap: 24, alignItems: 'start' }}>
           {/* Live Feedback Section */}
           <Card
             title={
@@ -160,14 +169,13 @@ const LiveFeedbackSession = () => {
             style={{
               borderRadius: 12,
               border: '1px solid #f0f0f0',
-              height: 'fit-content'
             }}
             bodyStyle={{ padding: 0 }}
           >
-            <div style={{ maxHeight: '70vh', overflowY: 'auto' }}>
+            <div style={{ height: '65vh', overflowY: 'auto' }}>
               {feedbackList.map((feedback) => (
                 <div
-                  key={feedback.id}
+                  key={feedback.created_at}
                   style={{
                     padding: '20px 24px',
                     borderLeft: `4px solid ${sentimentColors[feedback.sentiment]}`,
@@ -179,7 +187,7 @@ const LiveFeedbackSession = () => {
                     {feedback.message}
                   </Text>
                   <Text type="secondary" style={{ fontSize: 13 }}>
-                    {feedback.timestamp}
+                    {new Date(feedback.created_at).toLocaleTimeString()}
                   </Text>
                 </div>
               ))}
@@ -198,13 +206,35 @@ const LiveFeedbackSession = () => {
               <Title level={4} style={{ marginBottom: 8 }}>
                 Share with your audience
               </Title>
-              <Text type="secondary" style={{ fontSize: 14, display: 'block', marginBottom: 20 }}>
+              <Text type="secondary" style={{ fontSize: 14, display: 'block', marginBottom: 16 }}>
                 Anyone with the link can send feedback.
               </Text>
 
+              {/* Audience Code */}
+              <div style={{ marginBottom: 16 }}>
+                <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 6 }}>AUDIENCE CODE</Text>
+                <Space.Compact style={{ width: '100%' }}>
+                  <Input
+                    value={session?.audience_code ?? ''}
+                    readOnly
+                    style={{ borderRadius: '8px 0 0 8px', fontSize: 20, fontWeight: 700, letterSpacing: 4, textAlign: 'center' }}
+                  />
+                  <Button
+                    icon={<CopyOutlined />}
+                    onClick={() => {
+                      navigator.clipboard.writeText(session?.audience_code ?? '');
+                      message.success('Code copied!');
+                    }}
+                    style={{ borderRadius: '0 8px 8px 0' }}
+                  />
+                </Space.Compact>
+              </div>
+
+              {/* Share Link */}
+              <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 6 }}>SHARE LINK</Text>
               <Space.Compact style={{ width: '100%', marginBottom: 20 }}>
                 <Input
-                  value="https://feedback.live/a8k2m"
+                  value={shareLink}
                   readOnly
                   style={{
                     borderRadius: '8px 0 0 8px',

@@ -1,23 +1,56 @@
-import React, { useState } from 'react';
-import { Layout, Form, Input, Button, Typography } from 'antd';
+import { useState, useEffect, useRef } from 'react';
+import { Layout, Form, Input, Button, Typography, message } from 'antd';
+import { useParams, useLocation } from 'react-router-dom';
+import { joinSession } from '../api/sessions';
 import 'antd/dist/reset.css';
 
 const { Content } = Layout;
 const { Title, Text } = Typography;
 const { TextArea } = Input;
 
+const WS_BASE_URL = import.meta.env.VITE_WS_BASE_URL ?? 'ws://localhost:8000';
+
 const FeedbackSubmissionForm = () => {
+  const { code } = useParams();
+  const { state } = useLocation();
   const [form] = Form.useForm();
   const [charCount, setCharCount] = useState(0);
+  const [sessionId, setSessionId] = useState(state?.sessionId ?? null);
+  const wsRef = useRef(null);
   const maxLength = 500;
 
-  const handleTextChange = (e) => {
-    setCharCount(e.target.value.length);
-  };
+  useEffect(() => {
+    const resolveAndConnect = async (id) => {
+      const ws = new WebSocket(`${WS_BASE_URL}/ws/session/${id}/`);
+      wsRef.current = ws;
+      ws.onerror = () => message.error('Connection error.');
+    };
 
-  const onFinish = (values) => {
-    console.log('Feedback submitted:', values);
-    // Handle form submission
+    if (sessionId) {
+      resolveAndConnect(sessionId);
+    } else if (code) {
+      joinSession(code)
+        .then(({ data: res }) => {
+          setSessionId(res.data.id);
+          resolveAndConnect(res.data.id);
+        })
+        .catch(() => message.error('Invalid or expired session code.'));
+    }
+
+    return () => wsRef.current?.close();
+  }, []);
+
+  const handleTextChange = (e) => setCharCount(e.target.value.length);
+
+  const onFinish = ({ feedback }) => {
+    if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
+      message.error('Not connected. Please refresh and try again.');
+      return;
+    }
+    wsRef.current.send(JSON.stringify({ type: 'feedback', message: feedback }));
+    message.success('Feedback submitted!');
+    form.resetFields();
+    setCharCount(0);
   };
 
   return (
