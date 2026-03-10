@@ -17,3 +17,6 @@ export const deleteSession = (id) =>
 
 export const joinSession = (code) =>
   axiosInstance.get(`/feedback/sessions/join-session/${code}`)
+
+export const endSession = (id) =>
+  axiosInstance.patch(`/feedback/sessions/${id}/end-session`)

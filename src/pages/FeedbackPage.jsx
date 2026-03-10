@@ -12,7 +12,7 @@ import {
 } from '@ant-design/icons';
 import 'antd/dist/reset.css';
 import { useNavigate, useParams } from 'react-router-dom';
-import { getSession } from '../api/sessions';
+import { getSession, endSession } from '../api/sessions';
 
 const { Title, Text } = Typography;
 
@@ -51,10 +51,16 @@ const LiveFeedbackSession = () => {
     setStarted(true)
   }
 
-  const handleEnd = () => {
+  const handleEnd = async () => {
     wsRef.current?.close()
     wsRef.current = null
     setStarted(false)
+    try {
+      await endSession(sessionId)
+      message.success('Session ended successfully')
+    } catch {
+      message.error('Failed to end session')
+    }
     navigate('/home')
   }
 
